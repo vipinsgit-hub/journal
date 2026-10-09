@@ -21,7 +21,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onPrevMonth,
   onNextMonth,
   onToday,
-  preferredCurrency = 'INR',
+  preferredCurrency = 'USD',
 }) => {
   return (
     <div className="bg-[#12151A] border border-[#272C35] rounded-2xl p-4 sm:p-6 mb-6 shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -37,7 +37,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
           </button>
           <button
             onClick={onToday}
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-[#8170FF] hover:text-[#6C56FF] hover:bg-[#181C23] transition-colors"
+            className="px-3 py-1 rounded-lg text-xs font-semibold text-white hover:bg-[#181C23] transition-colors"
           >
             Today
           </button>
@@ -51,7 +51,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </div>
 
         <h2 className="text-xl sm:text-2xl font-bold text-[#F4F5F7] tracking-tight flex items-center gap-2">
-          <CalendarIcon size={22} className="text-[#8170FF]" />
+          <CalendarIcon size={22} className="text-white" />
           <span>{getMonthName(currentMonth)} {currentYear}</span>
         </h2>
       </div>

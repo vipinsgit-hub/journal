@@ -24,7 +24,7 @@ export const Navigation: React.FC<NavigationProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         {/* Brand Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#8170FF]/15 border border-[#8170FF]/30 flex items-center justify-center text-[#8170FF] shadow-sm">
+          <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-sm">
             <TrendingUp size={20} />
           </div>
           <div>
@@ -43,7 +43,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             onClick={() => onTabChange('calendar')}
             className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'calendar'
-                ? 'bg-[#8170FF] text-white shadow-sm shadow-[#8170FF]/20'
+                ? 'bg-white text-black font-semibold shadow-sm'
                 : 'text-[#969EAB] hover:text-[#F4F5F7] hover:bg-[#181C23]'
             }`}
           >
@@ -55,7 +55,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             onClick={() => onTabChange('dashboard')}
             className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'dashboard'
-                ? 'bg-[#8170FF] text-white shadow-sm shadow-[#8170FF]/20'
+                ? 'bg-white text-black font-semibold shadow-sm'
                 : 'text-[#969EAB] hover:text-[#F4F5F7] hover:bg-[#181C23]'
             }`}
           >
@@ -68,10 +68,10 @@ export const Navigation: React.FC<NavigationProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenProfile}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#12151A] border border-[#272C35] hover:border-[#8170FF]/50 text-[#F4F5F7] text-xs font-medium transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#12151A] border border-[#272C35] hover:border-white/40 text-[#F4F5F7] text-xs font-medium transition-all"
             title="Profile & Settings"
           >
-            <div className="w-6 h-6 rounded-full bg-[#8170FF]/20 text-[#8170FF] flex items-center justify-center text-[10px] font-bold border border-[#8170FF]/30">
+            <div className="w-6 h-6 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] font-bold border border-white/20">
               {displayName.charAt(0).toUpperCase()}
             </div>
             <span className="hidden sm:inline-block max-w-[120px] truncate">{displayName}</span>

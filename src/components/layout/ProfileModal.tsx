@@ -73,7 +73,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#272C35] bg-[#0D0F12]">
           <div className="flex items-center gap-2.5">
-            <User size={18} className="text-[#8170FF]" />
+            <User size={18} className="text-white" />
             <h2 className="text-base font-semibold text-[#F4F5F7]">Account & Preferences</h2>
           </div>
           <button
@@ -119,7 +119,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               placeholder="e.g. Rahul Sharma"
               required
               maxLength={50}
-              className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3.5 py-2.5 text-xs text-[#F4F5F7] focus:outline-none focus:border-[#8170FF] transition-colors"
+              className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3.5 py-2.5 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 transition-colors"
             />
           </div>
 
@@ -131,7 +131,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3.5 py-2.5 text-xs text-[#F4F5F7] focus:outline-none focus:border-[#8170FF] transition-colors"
+              className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3.5 py-2.5 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 transition-colors"
             >
               <option value="Asia/Kolkata">Asia/Kolkata (IST +5:30)</option>
               <option value="America/New_York">America/New_York (EST -5:00)</option>
@@ -151,7 +151,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2 bg-[#8170FF] hover:bg-[#6C56FF] disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition-colors shadow-lg shadow-[#8170FF]/20"
+              className="px-5 py-2 bg-white hover:bg-neutral-200 disabled:opacity-50 text-black font-semibold rounded-xl text-xs transition-colors shadow"
             >
               {saving ? 'Saving...' : 'Save Profile'}
             </button>

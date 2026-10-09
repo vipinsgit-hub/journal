@@ -4,8 +4,6 @@ import type { Trade, TradeFormData, MarketType } from '../../types/trade';
 import { tradeService } from '../../features/trades/tradeService';
 import { calculateNetPnl, calculateTotalFees, getPipSize, calculatePips } from '../../features/trades/tradeCalculations';
 import { formatCurrency } from '../../lib/currency';
-import { useAuth } from '../../features/auth/AuthProvider';
-import { DEFAULT_FOREX_PAIRS, DEFAULT_STRATEGIES } from '../../features/preferences/preferenceUtils';
 
 interface AddTradeModalProps {
   isOpen: boolean;
@@ -34,39 +32,17 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
   selectedDate,
   tradeToEdit,
   onTradeSaved,
-  preferredCurrency = 'INR',
+  preferredCurrency = 'USD',
 }) => {
-  const { profile } = useAuth();
-
-  // Combine user preferences with default lists, preserving historical trade instrument/strategy
-  const availablePairs = React.useMemo(() => {
-    const list = profile?.forex_pairs && profile.forex_pairs.length > 0 ? profile.forex_pairs : DEFAULT_FOREX_PAIRS;
-    if (tradeToEdit?.instrument && !list.includes(tradeToEdit.instrument)) {
-      return [tradeToEdit.instrument, ...list];
-    }
-    return list;
-  }, [profile?.forex_pairs, tradeToEdit?.instrument]);
-
-  const availableStrategies = React.useMemo(() => {
-    const list = profile?.strategies && profile.strategies.length > 0 ? profile.strategies : DEFAULT_STRATEGIES;
-    if (tradeToEdit?.strategy && !list.includes(tradeToEdit.strategy)) {
-      return [tradeToEdit.strategy, ...list];
-    }
-    return list;
-  }, [profile?.strategies, tradeToEdit?.strategy]);
-
-  const defaultInstrument = availablePairs[0] || 'EUR/USD';
-  const defaultStrategy = availableStrategies[0] || 'Breakout';
-
   const [formData, setFormData] = useState<TradeFormData>({
     trade_date: selectedDate,
     trade_time: '14:30',
-    instrument: defaultInstrument,
+    instrument: 'EURUSD',
     market: 'Forex Major',
     direction: 'Long',
     entry_price: '',
     exit_price: '',
-    quantity: 1.0, // 1 Lot default
+    quantity: 1.0,
     lot_size: 1.0,
     contract_size: 100000,
     stop_loss: '',
@@ -78,7 +54,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
     fees: 7,
     net_pnl: '',
     pips: '',
-    strategy: defaultStrategy,
+    strategy: 'Breakout',
     setup: '',
     notes: '',
     screenshot_file: null,
@@ -135,7 +111,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
       setFormData({
         trade_date: selectedDate,
         trade_time: new Date().toTimeString().slice(0, 5),
-        instrument: defaultInstrument,
+        instrument: 'EURUSD',
         market: 'Forex Major',
         direction: 'Long',
         entry_price: '',
@@ -152,7 +128,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
         fees: 7,
         net_pnl: '',
         pips: '',
-        strategy: defaultStrategy,
+        strategy: 'Breakout',
         setup: '',
         notes: '',
         screenshot_file: null,
@@ -161,26 +137,26 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
       setScreenshotPreview(null);
     }
     setError(null);
-  }, [tradeToEdit, selectedDate, isOpen, defaultInstrument, defaultStrategy]);
+  }, [tradeToEdit, selectedDate, isOpen]);
 
-  if (!isOpen) return null;
-
-  // Auto calculate P&L and Pips preview
-  const handleCalculatePnlAndPips = () => {
+  // Automatic Pips & P&L Calculation whenever entry, exit, direction, instrument, lot_size change
+  useEffect(() => {
     const entry = Number(formData.entry_price);
     const exit = Number(formData.exit_price);
     const lots = Number(formData.lot_size || formData.quantity || 1.0);
 
-    if (entry > 0 && exit > 0 && lots > 0) {
-      const pipSize = getPipSize(formData.instrument);
-      const calculatedPips = calculatePips(formData.direction, entry, exit, pipSize);
+    if (entry > 0 && exit > 0 && lots > 0 && formData.instrument.trim() !== '') {
+      const pipInfo = getPipSize(formData.instrument);
+      const calculatedPips = calculatePips(formData.direction, entry, exit, pipInfo.pipSize);
 
       let estGross = 0;
-      if (pipSize === 0.0001) {
+      const cleanInst = formData.instrument.toUpperCase().replace('/', '').trim();
+
+      if (pipInfo.pipSize === 0.0001) {
         estGross = calculatedPips * 10 * lots;
-      } else if (pipSize === 0.01 && formData.instrument.toUpperCase().includes('JPY')) {
+      } else if (pipInfo.pipSize === 0.01 && cleanInst.includes('JPY')) {
         estGross = (calculatedPips * 10 * lots) / (entry / 150);
-      } else if (formData.instrument.toUpperCase().includes('XAU')) {
+      } else if (cleanInst.includes('XAU') || cleanInst.includes('GOLD')) {
         estGross = (formData.direction === 'Long' ? exit - entry : entry - exit) * 100 * lots;
       } else {
         estGross = (formData.direction === 'Long' ? exit - entry : entry - exit) * lots * Number(formData.contract_size || 100000);
@@ -191,17 +167,19 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
       const swp = Number(formData.swap || 0);
       const oth = Number(formData.other_fees || 0);
       const totFees = calculateTotalFees(comm, swp, oth, 0);
-      const calcNet = calculateNetPnl(formData.gross_pnl !== '' ? Number(formData.gross_pnl) : estGross, totFees);
+      const calcNet = calculateNetPnl(estGross, totFees);
 
       setFormData((prev) => ({
         ...prev,
         pips: calculatedPips,
-        gross_pnl: prev.gross_pnl !== '' ? prev.gross_pnl : estGross,
+        gross_pnl: estGross,
         fees: totFees,
         net_pnl: calcNet,
       }));
     }
-  };
+  }, [formData.entry_price, formData.exit_price, formData.direction, formData.instrument, formData.lot_size, formData.commission, formData.swap, formData.other_fees]);
+
+  if (!isOpen) return null;
 
   const handleFeesChange = (
     commVal: number | '' | undefined,
@@ -240,8 +218,10 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
     e.preventDefault();
     setError(null);
 
-    if (!formData.instrument.trim()) {
-      setError('Please enter a Forex instrument (e.g. EUR/USD, GBP/JPY, XAU/USD).');
+    const cleanSymbol = formData.instrument.trim().toUpperCase();
+
+    if (!cleanSymbol) {
+      setError('Please enter a valid symbol (e.g. EURUSD, GBPUSD, XAUUSD).');
       return;
     }
     if (formData.entry_price === '' || Number(formData.entry_price) <= 0) {
@@ -274,6 +254,8 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
 
       const updatedFormData = {
         ...formData,
+        instrument: cleanSymbol,
+        strategy: formData.strategy?.trim() || '',
         quantity: Number(formData.lot_size || formData.quantity),
         screenshot_path: screenshotPath,
       };
@@ -301,6 +283,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
     0
   );
   const currentNetPnl = calculateNetPnl(Number(formData.gross_pnl || 0), currentTotalFees);
+  const pipInfo = getPipSize(formData.instrument);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-fadeIn">
@@ -332,7 +315,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
 
           {/* Section A: Forex Instrument & Details */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8170FF] border-b border-[#272C35] pb-1.5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white border-b border-[#272C35] pb-1.5">
               A. Trade Details & Symbol
             </h3>
 
@@ -344,7 +327,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                   value={formData.trade_date}
                   onChange={(e) => setFormData({ ...formData, trade_date: e.target.value })}
                   required
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF]"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20"
                 />
               </div>
 
@@ -354,43 +337,20 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                   type="time"
                   value={formData.trade_time || ''}
                   onChange={(e) => setFormData({ ...formData, trade_time: e.target.value })}
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF]"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20"
                 />
               </div>
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-[#969EAB] mb-1">Forex Pair / Symbol</label>
-                <div className="flex flex-col gap-1.5">
-                  <select
-                    value={availablePairs.includes(formData.instrument) ? formData.instrument : 'CUSTOM'}
-                    onChange={(e) => {
-                      if (e.target.value !== 'CUSTOM') {
-                        setFormData({ ...formData, instrument: e.target.value });
-                      } else {
-                        setFormData({ ...formData, instrument: '' });
-                      }
-                    }}
-                    className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] font-semibold focus:border-[#8170FF]"
-                  >
-                    {availablePairs.map((pair) => (
-                      <option key={pair} value={pair}>
-                        {pair}
-                      </option>
-                    ))}
-                    <option value="CUSTOM">+ Enter Custom Symbol...</option>
-                  </select>
-
-                  {(!availablePairs.includes(formData.instrument) || formData.instrument === '') && (
-                    <input
-                      type="text"
-                      value={formData.instrument}
-                      onChange={(e) => setFormData({ ...formData, instrument: e.target.value.toUpperCase() })}
-                      placeholder="Type custom symbol (e.g. XAG/USD, AUD/NZD)"
-                      required
-                      className="w-full bg-[#181C23] border border-[#8170FF] rounded-xl px-3 py-1.5 text-xs text-[#F4F5F7] uppercase font-semibold font-mono"
-                    />
-                  )}
-                </div>
+                <input
+                  type="text"
+                  value={formData.instrument}
+                  onChange={(e) => setFormData({ ...formData, instrument: e.target.value.toUpperCase() })}
+                  placeholder="Enter pair, e.g. EURUSD, GBPUSD, XAUUSD"
+                  required
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] font-semibold uppercase focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 font-mono tracking-wider"
+                />
               </div>
             </div>
 
@@ -400,7 +360,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                 <select
                   value={formData.market}
                   onChange={(e) => setFormData({ ...formData, market: e.target.value as MarketType })}
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF]"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20"
                 >
                   {FOREX_MARKETS.map((m) => (
                     <option key={m} value={m}>
@@ -443,17 +403,13 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
           {/* Section B: Forex Execution & Lots */}
           <div className="space-y-3">
             <div className="flex items-center justify-between border-b border-[#272C35] pb-1.5">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8170FF]">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
                 B. Execution & Lot Size
               </h3>
-              <button
-                type="button"
-                onClick={handleCalculatePnlAndPips}
-                className="text-[11px] text-[#8170FF] hover:text-[#6C56FF] flex items-center gap-1 font-medium bg-[#8170FF]/10 px-2.5 py-1 rounded-lg border border-[#8170FF]/30"
-              >
-                <Calculator size={13} />
-                <span>Auto-Calc PnL & Pips</span>
-              </button>
+              <div className="text-[11px] text-slate-400 flex items-center gap-1 font-medium bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+                <Calculator size={13} className="text-white" />
+                <span>Auto Pip Calc Active</span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -468,7 +424,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                   }
                   placeholder="1.08500"
                   required
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF] font-mono"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 font-mono"
                 />
               </div>
 
@@ -483,7 +439,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                   }
                   placeholder="1.09000"
                   required
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF] font-mono"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 font-mono"
                 />
               </div>
 
@@ -499,12 +455,17 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                   }}
                   placeholder="1.00"
                   required
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF] font-semibold"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 font-semibold"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#969EAB] mb-1">Pips (Auto/Manual)</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-medium text-[#969EAB]">Pips</label>
+                  {pipInfo.label && (
+                    <span className="text-[10px] text-slate-400 font-mono">{pipInfo.label}</span>
+                  )}
+                </div>
                 <input
                   type="number"
                   step="any"
@@ -513,7 +474,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                     setFormData({ ...formData, pips: e.target.value === '' ? '' : Number(e.target.value) })
                   }
                   placeholder="+50.0"
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF] font-mono"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 font-mono"
                 />
               </div>
             </div>
@@ -521,7 +482,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
 
           {/* Section C: Risk Management (Stop Loss & Take Profit) */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8170FF] border-b border-[#272C35] pb-1.5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white border-b border-[#272C35] pb-1.5">
               C. Risk Management (Optional)
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -535,7 +496,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                     setFormData({ ...formData, stop_loss: e.target.value === '' ? '' : Number(e.target.value) })
                   }
                   placeholder="e.g. 1.08200"
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF] font-mono"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 font-mono"
                 />
               </div>
 
@@ -549,21 +510,21 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                     setFormData({ ...formData, target: e.target.value === '' ? '' : Number(e.target.value) })
                   }
                   placeholder="e.g. 1.09200"
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF] font-mono"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 font-mono"
                 />
               </div>
             </div>
           </div>
 
-          {/* Section D: Forex PnL & Fee Breakdown */}
+          {/* Section D: Forex PnL & Fee Breakdown ($ USD) */}
           <div className="space-y-3 bg-[#0D0F12] p-4 rounded-xl border border-[#272C35]">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8170FF] border-b border-[#272C35] pb-2">
-              D. Realized Result & Forex Fees Breakdown (₹ INR)
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white border-b border-[#272C35] pb-2">
+              D. Realized Result & Forex Fees Breakdown ($ USD)
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#969EAB] mb-1">Gross P&L (₹)</label>
+                <label className="block text-xs font-medium text-[#969EAB] mb-1">Gross P&L ($)</label>
                 <input
                   type="number"
                   step="any"
@@ -578,12 +539,12 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                   }
                   placeholder="500"
                   required
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF] font-semibold"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 font-semibold"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#969EAB] mb-1">Commission (₹)</label>
+                <label className="block text-xs font-medium text-[#969EAB] mb-1">Commission ($)</label>
                 <input
                   type="number"
                   step="any"
@@ -597,12 +558,12 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                     )
                   }
                   placeholder="7.00"
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF]"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#969EAB] mb-1">Swap / Financing (₹)</label>
+                <label className="block text-xs font-medium text-[#969EAB] mb-1">Swap / Financing ($)</label>
                 <input
                   type="number"
                   step="any"
@@ -616,7 +577,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                     )
                   }
                   placeholder="2.50"
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF]"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20"
                 />
               </div>
 
@@ -640,43 +601,20 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
 
           {/* Section E: Strategy & Notes */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8170FF] border-b border-[#272C35] pb-1.5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white border-b border-[#272C35] pb-1.5">
               E. Strategy & Trade Notes
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#969EAB] mb-1">Strategy</label>
-                <div className="flex flex-col gap-1.5">
-                  <select
-                    value={availableStrategies.includes(formData.strategy || '') ? formData.strategy : 'CUSTOM'}
-                    onChange={(e) => {
-                      if (e.target.value !== 'CUSTOM') {
-                        setFormData({ ...formData, strategy: e.target.value });
-                      } else {
-                        setFormData({ ...formData, strategy: '' });
-                      }
-                    }}
-                    className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF]"
-                  >
-                    {availableStrategies.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                    <option value="CUSTOM">+ Enter Custom Strategy...</option>
-                  </select>
-
-                  {(!availableStrategies.includes(formData.strategy || '') || formData.strategy === '') && (
-                    <input
-                      type="text"
-                      value={formData.strategy || ''}
-                      onChange={(e) => setFormData({ ...formData, strategy: e.target.value })}
-                      placeholder="Type custom strategy name"
-                      className="w-full bg-[#181C23] border border-[#8170FF] rounded-xl px-3 py-1.5 text-xs text-[#F4F5F7]"
-                    />
-                  )}
-                </div>
+                <label className="block text-xs font-medium text-[#969EAB] mb-1">Trading Strategy</label>
+                <input
+                  type="text"
+                  value={formData.strategy || ''}
+                  onChange={(e) => setFormData({ ...formData, strategy: e.target.value })}
+                  placeholder="Enter strategy, e.g. Liquidity Sweep"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20"
+                />
               </div>
 
               <div>
@@ -686,7 +624,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                   value={formData.setup}
                   onChange={(e) => setFormData({ ...formData, setup: e.target.value })}
                   placeholder="e.g. London Sweep, H&S Pattern"
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF]"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20"
                 />
               </div>
             </div>
@@ -698,20 +636,20 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Market context, session state, emotions during trade..."
-                className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:border-[#8170FF]"
+                className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3 py-2 text-xs text-[#F4F5F7] focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20"
               />
             </div>
           </div>
 
           {/* Section F: Screenshot Attachment */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8170FF] border-b border-[#272C35] pb-1.5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white border-b border-[#272C35] pb-1.5">
               F. Screenshot Attachment (Optional)
             </h3>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <label className="w-full sm:w-auto cursor-pointer bg-[#181C23] hover:bg-[#272C35] border border-dashed border-[#272C35] hover:border-[#8170FF] rounded-xl px-4 py-3 text-center transition-all flex items-center justify-center gap-2 text-xs text-[#969EAB] hover:text-[#F4F5F7]">
-                <Upload size={16} className="text-[#8170FF]" />
+              <label className="w-full sm:w-auto cursor-pointer bg-[#181C23] hover:bg-[#272C35] border border-dashed border-[#272C35] hover:border-white/40 rounded-xl px-4 py-3 text-center transition-all flex items-center justify-center gap-2 text-xs text-[#969EAB] hover:text-[#F4F5F7]">
+                <Upload size={16} className="text-white" />
                 <span>Upload Chart Screenshot</span>
                 <input
                   type="file"
@@ -757,7 +695,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={saving || uploading}
-            className="px-5 py-2 bg-[#8170FF] hover:bg-[#6C56FF] disabled:opacity-50 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors shadow-lg shadow-[#8170FF]/20"
+            className="px-5 py-2 bg-white hover:bg-neutral-200 disabled:opacity-50 text-black rounded-xl text-xs font-bold flex items-center gap-2 transition-colors shadow"
           >
             {saving ? (
               <span>Saving Trade...</span>

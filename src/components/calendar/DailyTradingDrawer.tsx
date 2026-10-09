@@ -27,7 +27,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
   onOpenAddTrade,
   onEditTrade,
   onDeleteTrade,
-  preferredCurrency = 'INR',
+  preferredCurrency = 'USD',
 }) => {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [previewScreenshotUrl, setPreviewScreenshotUrl] = useState<string | null>(null);
@@ -52,7 +52,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#272C35] bg-[#0D0F12] flex items-center justify-between shrink-0">
           <div>
-            <span className="text-[11px] font-bold text-[#8170FF] uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-[#969EAB] uppercase tracking-wider block">
               Daily Forex Journal
             </span>
             <h2 className="text-base sm:text-lg font-bold text-[#F4F5F7] mt-0.5">
@@ -152,7 +152,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
             </h3>
             <button
               onClick={onOpenAddTrade}
-              className="px-3.5 py-1.5 bg-[#8170FF] hover:bg-[#6C56FF] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm shadow-[#8170FF]/20"
+              className="px-3.5 py-1.5 bg-white hover:bg-neutral-200 text-black font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow"
             >
               <Plus size={14} />
               <span>Add Trade</span>
@@ -165,7 +165,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
               <p className="text-xs text-[#969EAB] mb-3">No trades recorded for this date.</p>
               <button
                 onClick={onOpenAddTrade}
-                className="px-4 py-2 bg-[#8170FF] hover:bg-[#6C56FF] text-white rounded-xl text-xs font-medium inline-flex items-center gap-1.5"
+                className="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-semibold rounded-xl text-xs inline-flex items-center gap-1.5"
               >
                 <Plus size={14} />
                 <span>Add First Forex Trade for {selectedDate}</span>
@@ -179,7 +179,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                 return (
                   <div
                     key={trade.id}
-                    className="bg-[#0D0F12] border border-[#272C35] hover:border-[#8170FF]/40 rounded-xl p-4 transition-all relative space-y-2.5"
+                    className="bg-[#0D0F12] border border-[#272C35] hover:border-white/30 rounded-xl p-4 transition-all relative space-y-2.5"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
@@ -235,7 +235,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                         Gross: {formatCurrency(trade.gross_pnl, preferredCurrency)} | Comm: {formatCurrency(trade.commission ?? 0, preferredCurrency)} | Swap: {formatCurrency(trade.swap ?? 0, preferredCurrency)}
                       </div>
                       {trade.strategy && (
-                        <span className="bg-[#8170FF]/15 text-[#8170FF] border border-[#8170FF]/30 px-2 py-0.5 rounded-md text-[10px] font-medium">
+                        <span className="bg-white/10 text-white border border-white/20 px-2 py-0.5 rounded-md text-[10px] font-medium">
                           {trade.strategy}
                         </span>
                       )}
@@ -252,7 +252,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                       {trade.screenshot_path ? (
                         <button
                           onClick={() => handleOpenScreenshot(trade.screenshot_path!)}
-                          className="text-[11px] text-[#8170FF] hover:text-[#6C56FF] flex items-center gap-1 font-medium"
+                          className="text-[11px] text-white hover:text-slate-300 flex items-center gap-1 font-medium"
                         >
                           <ImageIcon size={13} />
                           <span>View Chart Screenshot</span>

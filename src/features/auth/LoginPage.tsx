@@ -58,7 +58,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-[#8170FF]/15 border border-[#8170FF]/30 flex items-center justify-center text-[#8170FF] mb-3 shadow-xl shadow-[#8170FF]/10">
+          <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white mb-3 shadow-xl">
             <TrendingUp size={24} />
           </div>
           <h1 className="text-2xl font-bold text-[#F4F5F7] tracking-tight">Forex Trading Journal</h1>
@@ -78,7 +78,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 <button
                   type="button"
                   onClick={onDemoLogin}
-                  className="mt-2 text-xs text-[#8170FF] underline hover:text-[#6C56FF] transition-colors font-medium inline-block"
+                  className="mt-2 text-xs text-white underline hover:text-slate-300 transition-colors font-medium inline-block"
                 >
                   Click here to explore with Demo Mode
                 </button>
@@ -107,7 +107,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="trader@example.com"
                   required
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#F4F5F7] placeholder-[#969EAB]/50 focus:outline-none focus:border-[#8170FF] transition-colors"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#F4F5F7] placeholder-[#969EAB]/50 focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 transition-colors"
                 />
               </div>
             </div>
@@ -118,7 +118,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 <button
                   type="button"
                   onClick={onNavigateToForgotPassword}
-                  className="text-xs text-[#8170FF] hover:text-[#6C56FF] transition-colors"
+                  className="text-xs text-slate-300 hover:text-white transition-colors"
                 >
                   Forgot password?
                 </button>
@@ -131,7 +131,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#F4F5F7] placeholder-[#969EAB]/50 focus:outline-none focus:border-[#8170FF] transition-colors"
+                  className="w-full bg-[#181C23] border border-[#272C35] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#F4F5F7] placeholder-[#969EAB]/50 focus:outline-none focus:border-white focus:ring-1 focus:ring-white/20 transition-colors"
                 />
               </div>
             </div>
@@ -139,7 +139,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 bg-[#8170FF] hover:bg-[#6C56FF] disabled:opacity-50 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-[#8170FF]/20"
+              className="w-full mt-2 bg-white hover:bg-neutral-200 disabled:opacity-50 text-black font-bold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow"
             >
               {loading ? (
                 <span>Signing in...</span>
@@ -159,7 +159,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <button
                 type="button"
                 onClick={onNavigateToRegister}
-                className="text-[#8170FF] hover:text-[#6C56FF] font-semibold transition-colors ml-1"
+                className="text-white hover:text-slate-300 font-semibold transition-colors ml-1"
               >
                 Create Account
               </button>

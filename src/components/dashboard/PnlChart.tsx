@@ -17,7 +17,7 @@ interface PnlChartProps {
   preferredCurrency?: string;
 }
 
-export const PnlChart: React.FC<PnlChartProps> = ({ trades, preferredCurrency = 'INR' }) => {
+export const PnlChart: React.FC<PnlChartProps> = ({ trades, preferredCurrency = 'USD' }) => {
   // Aggregate P&L by trade date
   const chartData = React.useMemo(() => {
     const map: Record<string, number> = {};
@@ -61,7 +61,7 @@ export const PnlChart: React.FC<PnlChartProps> = ({ trades, preferredCurrency = 
             fontSize={11}
             tickLine={false}
             axisLine={{ stroke: '#334155' }}
-            tickFormatter={(val) => `${val >= 0 ? '₹' : '-₹'}${Math.abs(val)}`}
+            tickFormatter={(val) => `${val >= 0 ? '$' : '-$'}${Math.abs(val)}`}
           />
           <Tooltip
             content={({ active, payload }) => {

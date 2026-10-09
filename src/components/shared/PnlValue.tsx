@@ -11,7 +11,7 @@ interface PnlValueProps {
 
 export const PnlValue: React.FC<PnlValueProps> = ({
   value,
-  currency = 'INR',
+  currency = 'USD',
   className = '',
   size = 'md',
 }) => {

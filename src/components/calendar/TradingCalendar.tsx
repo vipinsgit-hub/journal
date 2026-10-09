@@ -23,7 +23,7 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
   trades,
   onTradeSaved,
   onDeleteTrade,
-  preferredCurrency = 'INR',
+  preferredCurrency = 'USD',
 }) => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -175,7 +175,7 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
           setTradeToEdit(null);
           setIsAddModalOpen(true);
         }}
-        className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-[#8170FF] hover:bg-[#6C56FF] text-white flex items-center justify-center shadow-2xl shadow-[#8170FF]/40 transition-all hover:scale-105"
+        className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-white hover:bg-neutral-200 text-black font-bold flex items-center justify-center shadow-2xl shadow-white/10 transition-all hover:scale-105"
         title="Add Trade"
       >
         <Plus size={24} />

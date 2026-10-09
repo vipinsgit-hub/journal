@@ -110,7 +110,7 @@ const MainAppContent: React.FC = () => {
   const [tradesError, setTradesError] = useState<string | null>(null);
 
   const effectiveUserId = user?.id || (demoMode ? 'demo-user' : null);
-  const preferredCurrency = profile?.preferred_currency || 'INR';
+  const preferredCurrency = profile?.preferred_currency || 'USD';
 
   // Fetch trades when user or demoMode changes
   const loadTrades = async () => {

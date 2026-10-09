@@ -25,7 +25,7 @@ interface TradingDashboardProps {
 
 export const TradingDashboard: React.FC<TradingDashboardProps> = ({
   trades,
-  preferredCurrency = 'INR',
+  preferredCurrency = 'USD',
 }) => {
   const today = new Date();
   const currentDate = { month: today.getMonth(), year: today.getFullYear() };
@@ -45,7 +45,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
       {/* Dashboard Section 1: Top Key Metric Cards */}
       <div>
         <h2 className="text-lg font-bold text-[#F4F5F7] mb-4 flex items-center gap-2">
-          <BarChart3 size={20} className="text-[#8170FF]" />
+          <BarChart3 size={20} className="text-white" />
           <span>Forex Performance Overview</span>
         </h2>
 

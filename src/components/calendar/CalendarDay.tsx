@@ -14,7 +14,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   cell,
   dailySummary,
   onClickDate,
-  preferredCurrency = 'INR',
+  preferredCurrency = 'USD',
 }) => {
   const hasTrades = (dailySummary?.total_trades || 0) > 0;
   const netPnl = dailySummary?.net_pnl ?? 0;
@@ -23,7 +23,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   const isBreakeven = hasTrades && netPnl === 0;
 
   // Visual card styles for premium black terminal theme
-  let stateStyles = 'bg-[#12151A] border-[#272C35] hover:border-[#8170FF]/50';
+  let stateStyles = 'bg-[#12151A] border-[#272C35] hover:border-white/30';
 
   if (!cell.isCurrentMonth) {
     stateStyles = 'bg-[#08090B]/50 border-[#181C23] opacity-40 hover:opacity-75';
@@ -33,7 +33,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     } else if (isNegative) {
       stateStyles = 'bg-[#FF647C]/10 border-[#FF647C]/40 hover:border-[#FF647C]/80 shadow-sm shadow-[#FF647C]/5';
     } else if (isBreakeven) {
-      stateStyles = 'bg-[#181C23] border-[#272C35] hover:border-[#8170FF]/50';
+      stateStyles = 'bg-[#181C23] border-[#272C35] hover:border-white/30';
     }
   }
 
@@ -44,7 +44,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     >
       {/* Today Highlight Indicator */}
       {cell.isToday && (
-        <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-bl-full bg-[#8170FF] shadow-sm shadow-[#8170FF]/50" />
+        <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-bl-full bg-white shadow-sm shadow-white/50" />
       )}
 
       {/* Day Header */}
@@ -52,7 +52,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         <span
           className={`text-xs sm:text-sm font-semibold rounded-lg px-2 py-0.5 ${
             cell.isToday
-              ? 'bg-[#8170FF] text-white font-bold'
+              ? 'bg-white text-black font-bold'
               : cell.isCurrentMonth
               ? 'text-[#F4F5F7]'
               : 'text-[#969EAB]'

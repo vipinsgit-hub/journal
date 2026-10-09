@@ -1,30 +1,52 @@
 import type { Trade, DailySummaryData, MonthlySummaryData, OverallPerformanceSummary } from '../../types/trade';
 
+export interface PipSizeInfo {
+  pipSize: number;
+  isKnown: boolean;
+  label?: string;
+}
+
 /**
- * Returns instrument-aware Pip Size for Forex and Metals.
+ * Returns instrument-aware Pip Size for Forex, Metals, Crypto, and Indices.
  */
-export function getPipSize(instrument: string): number {
-  if (!instrument) return 0.0001;
+export function getPipSize(instrument: string): PipSizeInfo {
+  if (!instrument || !instrument.trim()) {
+    return { pipSize: 0.0001, isKnown: true };
+  }
+
   const clean = instrument.toUpperCase().replace('/', '').replace('-', '').trim();
 
-  // JPY pairs: 0.01
+  // JPY pairs: 0.01 (USDJPY, EURJPY, GBPJPY, etc.)
   if (clean.includes('JPY')) {
-    return 0.01;
+    return { pipSize: 0.01, isKnown: true, label: 'JPY (0.01)' };
   }
   // Gold (XAUUSD): 0.10 (10 cents per pip)
   if (clean.includes('XAU') || clean.includes('GOLD')) {
-    return 0.10;
+    return { pipSize: 0.10, isKnown: true, label: 'Gold (0.10)' };
   }
   // Silver (XAGUSD): 0.01
   if (clean.includes('XAG') || clean.includes('SILVER')) {
-    return 0.01;
+    return { pipSize: 0.01, isKnown: true, label: 'Silver (0.01)' };
   }
   // Crypto (BTCUSD, ETHUSD): 1.0
   if (clean.includes('BTC') || clean.includes('ETH')) {
-    return 1.0;
+    return { pipSize: 1.0, isKnown: true, label: 'Crypto (1.0)' };
   }
+  // Stock Indices (US30, NAS100, SPX500, GER40, DE30, UK100, DOW)
+  if (clean.includes('US30') || clean.includes('NAS') || clean.includes('SPX') || clean.includes('GER') || clean.includes('DE30') || clean.includes('UK100') || clean.includes('DOW') || clean.includes('NDX')) {
+    return { pipSize: 1.0, isKnown: true, label: 'Index Points (1.0)' };
+  }
+
   // Standard Forex Pairs (EURUSD, GBPUSD, AUDUSD, NZDUSD, USDCAD, USDCHF, etc.): 0.0001
-  return 0.0001;
+  const forexCurrencies = ['EUR', 'GBP', 'AUD', 'NZD', 'USD', 'CAD', 'CHF', 'SEK', 'NOK', 'SGD', 'HKD', 'MXN', 'TRY', 'ZAR'];
+  const hasCurrency = forexCurrencies.some((c) => clean.includes(c));
+
+  if (hasCurrency) {
+    return { pipSize: 0.0001, isKnown: true, label: 'Standard Forex (0.0001)' };
+  }
+
+  // Unknown instrument fallback
+  return { pipSize: 0.0001, isKnown: false, label: 'Pip size not configured' };
 }
 
 /**
