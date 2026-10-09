@@ -11,66 +11,87 @@ import { tradeService } from './features/trades/tradeService';
 import type { Trade } from './types/trade';
 import { LoadingState, ErrorState } from './components/shared/States';
 
-// Initial sample trades for demo mode preview if no live data present
+// Initial sample Forex trades for demo mode preview if no live data present
 const DEMO_INITIAL_TRADES: Trade[] = [
   {
     id: 'demo-1',
     user_id: 'demo-user',
     trade_date: new Date().toISOString().split('T')[0],
-    instrument: 'NIFTY 25000 CE',
-    market: 'Options',
+    trade_time: '14:30',
+    instrument: 'EUR/USD',
+    market: 'Forex Major',
     direction: 'Long',
-    entry_price: 140,
-    exit_price: 185,
-    quantity: 50,
-    stop_loss: 120,
-    target: 190,
-    gross_pnl: 2250,
-    fees: 40,
-    net_pnl: 2210,
+    entry_price: 1.0850,
+    exit_price: 1.0910,
+    quantity: 1.0, // 1 Lot
+    lot_size: 1.0,
+    contract_size: 100000,
+    stop_loss: 1.0820,
+    target: 1.0920,
+    gross_pnl: 600,
+    commission: 7,
+    swap: 2,
+    other_fees: 0,
+    fees: 9,
+    net_pnl: 591,
+    pips: 60,
     strategy: 'Breakout',
-    setup: 'Opening Range Breakout',
-    notes: 'Strong volume confirmation on 5m chart.',
+    setup: 'London Session High Breakout',
+    notes: 'Strong volume expansion on 15m timeframe.',
     created_at: new Date().toISOString(),
   },
   {
     id: 'demo-2',
     user_id: 'demo-user',
     trade_date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    instrument: 'BANKNIFTY 52000 PE',
-    market: 'Options',
+    trade_time: '18:15',
+    instrument: 'GBP/JPY',
+    market: 'Forex Minor',
     direction: 'Short',
-    entry_price: 320,
-    exit_price: 345,
-    quantity: 30,
-    stop_loss: 300,
-    target: 360,
-    gross_pnl: -750,
-    fees: 35,
-    net_pnl: -785,
+    entry_price: 198.50,
+    exit_price: 198.95,
+    quantity: 0.5,
+    lot_size: 0.5,
+    contract_size: 100000,
+    stop_loss: 198.20,
+    target: 197.80,
+    gross_pnl: -180,
+    commission: 3.5,
+    swap: 1.5,
+    other_fees: 0,
+    fees: 5,
+    net_pnl: -185,
+    pips: -45,
     strategy: 'Reversal',
-    setup: 'Resistance Rejection',
-    notes: 'Exited early as momentum shifted.',
+    setup: 'Daily Resistance Rejection',
+    notes: 'Exited on momentum shift.',
     created_at: new Date().toISOString(),
   },
   {
     id: 'demo-3',
     user_id: 'demo-user',
     trade_date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
-    instrument: 'RELIANCE',
-    market: 'Equity',
+    trade_time: '09:45',
+    instrument: 'XAU/USD',
+    market: 'Metals (XAU/XAG)',
     direction: 'Long',
-    entry_price: 2750,
-    exit_price: 2810,
-    quantity: 25,
-    stop_loss: 2720,
-    target: 2850,
-    gross_pnl: 1500,
-    fees: 25,
-    net_pnl: 1475,
+    entry_price: 2650.00,
+    exit_price: 2665.50,
+    quantity: 0.2,
+    lot_size: 0.2,
+    contract_size: 100,
+    stop_loss: 2642.00,
+    target: 2670.00,
+    gross_pnl: 310,
+    commission: 4,
+    swap: 0,
+    other_fees: 0,
+    fees: 4,
+    net_pnl: 306,
+    pips: 155,
     strategy: 'Trend Following',
-    setup: 'VWAP Hold',
-    notes: 'Clean trend day.',
+    setup: 'VWAP Hold & NY Open Momentum',
+    notes: 'Clean continuation pattern on Gold.',
     created_at: new Date().toISOString(),
   },
 ];
@@ -129,8 +150,8 @@ const MainAppContent: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
-        <LoadingState message="Initializing Trading Journal..." />
+      <div className="min-h-screen bg-[#08090B] flex items-center justify-center">
+        <LoadingState message="Initializing Forex Trading Journal..." />
       </div>
     );
   }
@@ -153,7 +174,7 @@ const MainAppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#08090B] text-[#F4F5F7] flex flex-col font-sans">
       {/* Top Application Header Navigation */}
       <Navigation
         activeTab={activeTab}
@@ -164,7 +185,7 @@ const MainAppContent: React.FC = () => {
       {/* Main Workspace Body */}
       <main className="flex-1">
         {tradesLoading && trades.length === 0 ? (
-          <LoadingState message="Loading journal records..." />
+          <LoadingState message="Loading Forex journal records..." />
         ) : tradesError ? (
           <div className="max-w-xl mx-auto mt-12 px-4">
             <ErrorState message={tradesError} onRetry={loadTrades} />

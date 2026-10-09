@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import type { Profile } from '../../types/profile';
+import { profileService } from '../profiles/profileService';
 
 interface AuthContextType {
   user: User | null;
@@ -21,20 +22,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
-    if (!isSupabaseConfigured) return;
+  const fetchProfile = async (targetUser: User | { id: string; email?: string; user_metadata?: any }) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
-      }
-      if (data) {
-        setProfile(data as Profile);
+      const p = await profileService.getProfile(
+        targetUser.id,
+        targetUser.email,
+        targetUser.user_metadata?.display_name
+      );
+      if (p) {
+        setProfile(p);
       }
     } catch (err) {
       console.error('Profile load error:', err);
@@ -43,6 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
+      // In demo/unconfigured mode, load local demo profile
+      fetchProfile({ id: 'demo-user', email: 'demo@journal.local', user_metadata: { display_name: 'Demo Trader' } });
       setLoading(false);
       return;
     }
@@ -52,7 +50,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
+      } else {
+        fetchProfile({ id: 'demo-user', email: 'demo@journal.local', user_metadata: { display_name: 'Demo Trader' } });
       }
       setLoading(false);
     });
@@ -64,9 +64,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
       } else {
-        setProfile(null);
+        fetchProfile({ id: 'demo-user', email: 'demo@journal.local', user_metadata: { display_name: 'Demo Trader' } });
       }
       setLoading(false);
     });
@@ -87,7 +87,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshProfile = async () => {
     if (user) {
-      await fetchProfile(user.id);
+      await fetchProfile(user);
+    } else {
+      await fetchProfile({ id: 'demo-user', email: 'demo@journal.local', user_metadata: { display_name: 'Demo Trader' } });
     }
   };
 

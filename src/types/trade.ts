@@ -1,21 +1,28 @@
-export type MarketType = 'Equity' | 'Options' | 'Futures' | 'Forex' | 'Crypto' | 'Other';
+export type MarketType = 'Forex Major' | 'Forex Minor' | 'Forex Exotic' | 'Metals (XAU/XAG)' | 'Crypto' | 'Indices' | 'Other';
 export type DirectionType = 'Long' | 'Short';
 
 export interface Trade {
   id: string;
   user_id: string;
   trade_date: string; // YYYY-MM-DD
-  instrument: string;
+  trade_time?: string | null; // HH:mm
+  instrument: string; // e.g. EUR/USD, GBP/JPY, XAU/USD
   market: MarketType;
   direction: DirectionType;
   entry_price: number;
   exit_price: number;
-  quantity: number;
+  quantity: number; // lot size or position units
+  lot_size?: number | null;
+  contract_size?: number | null;
   stop_loss?: number | null;
   target?: number | null;
   gross_pnl: number;
-  fees: number;
+  commission?: number | null;
+  swap?: number | null;
+  other_fees?: number | null;
+  fees: number; // total fees = commission + swap + other_fees
   net_pnl: number;
+  pips?: number | null;
   strategy?: string | null;
   setup?: string | null;
   notes?: string | null;
@@ -26,17 +33,24 @@ export interface Trade {
 
 export interface TradeFormData {
   trade_date: string;
+  trade_time?: string;
   instrument: string;
   market: MarketType;
   direction: DirectionType;
   entry_price: number | '';
   exit_price: number | '';
-  quantity: number | '';
+  quantity: number | ''; // lot size
+  lot_size?: number | '';
+  contract_size?: number | '';
   stop_loss?: number | '' | null;
   target?: number | '' | null;
   gross_pnl: number | '';
+  commission?: number | '';
+  swap?: number | '';
+  other_fees?: number | '';
   fees: number | '';
   net_pnl: number | '';
+  pips?: number | '';
   strategy?: string;
   setup?: string;
   notes?: string;

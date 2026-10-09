@@ -1,10 +1,55 @@
 import type { Trade, DailySummaryData, MonthlySummaryData, OverallPerformanceSummary } from '../../types/trade';
 
 /**
- * Calculates Net PnL from Gross PnL and Fees safely avoiding JS float issues.
+ * Returns instrument-aware Pip Size for Forex and Metals.
  */
-export function calculateNetPnl(grossPnl: number, fees: number): number {
-  const net = (grossPnl || 0) - (fees || 0);
+export function getPipSize(instrument: string): number {
+  if (!instrument) return 0.0001;
+  const clean = instrument.toUpperCase().replace('/', '').replace('-', '').trim();
+
+  // JPY pairs: 0.01
+  if (clean.includes('JPY')) {
+    return 0.01;
+  }
+  // Gold (XAUUSD): 0.10 (10 cents per pip)
+  if (clean.includes('XAU') || clean.includes('GOLD')) {
+    return 0.10;
+  }
+  // Silver (XAGUSD): 0.01
+  if (clean.includes('XAG') || clean.includes('SILVER')) {
+    return 0.01;
+  }
+  // Crypto (BTCUSD, ETHUSD): 1.0
+  if (clean.includes('BTC') || clean.includes('ETH')) {
+    return 1.0;
+  }
+  // Standard Forex Pairs (EURUSD, GBPUSD, AUDUSD, NZDUSD, USDCAD, USDCHF, etc.): 0.0001
+  return 0.0001;
+}
+
+/**
+ * Calculates pips gained or lost based on direction, entry, exit, and pip size.
+ */
+export function calculatePips(direction: 'Long' | 'Short', entry: number, exit: number, pipSize: number): number {
+  if (entry <= 0 || exit <= 0 || pipSize <= 0) return 0;
+  const diff = direction === 'Long' ? exit - entry : entry - exit;
+  const pips = diff / pipSize;
+  return Math.round((pips + Number.EPSILON) * 10) / 10;
+}
+
+/**
+ * Calculates Total Fees from Commission, Swap, Other Fees, and standard Fees.
+ */
+export function calculateTotalFees(commission: number = 0, swap: number = 0, otherFees: number = 0, legacyFees: number = 0): number {
+  const total = (commission || 0) + (swap || 0) + (otherFees || 0) + (legacyFees || 0);
+  return Math.round((total + Number.EPSILON) * 100) / 100;
+}
+
+/**
+ * Calculates Net PnL from Gross PnL and Total Fees safely avoiding JS float issues.
+ */
+export function calculateNetPnl(grossPnl: number, totalFees: number): number {
+  const net = (grossPnl || 0) - (totalFees || 0);
   return Math.round((net + Number.EPSILON) * 100) / 100;
 }
 
@@ -39,8 +84,9 @@ export function calculateDailySummary(tradeDate: string, trades: Trade[]): Daily
   let worstTrade: Trade | null = null;
 
   for (const trade of trades) {
+    const tradeFees = trade.fees ?? calculateTotalFees(trade.commission || 0, trade.swap || 0, trade.other_fees || 0);
     totalGross += trade.gross_pnl || 0;
-    totalFees += trade.fees || 0;
+    totalFees += tradeFees;
     totalNet += trade.net_pnl || 0;
 
     if (trade.net_pnl > 0) {
@@ -59,7 +105,6 @@ export function calculateDailySummary(tradeDate: string, trades: Trade[]): Daily
     }
   }
 
-  // Win rate = winning trades / total trades * 100
   const winRate = trades.length > 0 ? (winningCount / trades.length) * 100 : 0;
 
   return {
@@ -80,7 +125,6 @@ export function calculateDailySummary(tradeDate: string, trades: Trade[]): Daily
 /**
  * Calculates Profit Factor.
  * Gross profits from winning trades / absolute gross losses from losing trades.
- * Returns Infinity if there are winning trades but zero losses, and 0 if no wins and no losses.
  */
 export function calculateProfitFactor(trades: Trade[]): number {
   if (!trades || trades.length === 0) return 0;
@@ -108,7 +152,6 @@ export function calculateProfitFactor(trades: Trade[]): number {
  * Aggregates trades into monthly summary data for a given month and year.
  */
 export function calculateMonthlySummary(month: number, year: number, trades: Trade[]): MonthlySummaryData {
-  // Filter trades for the given year and month
   const monthTrades = trades.filter((t) => {
     const [tYear, tMonth] = t.trade_date.split('-').map(Number);
     return tYear === year && tMonth === month + 1;
@@ -124,8 +167,9 @@ export function calculateMonthlySummary(month: number, year: number, trades: Tra
   let breakevens = 0;
 
   for (const t of monthTrades) {
+    const tradeFees = t.fees ?? calculateTotalFees(t.commission || 0, t.swap || 0, t.other_fees || 0);
     grossPnl += t.gross_pnl || 0;
-    totalFees += t.fees || 0;
+    totalFees += tradeFees;
     netPnl += t.net_pnl || 0;
     if (t.net_pnl > 0) wins++;
     else if (t.net_pnl < 0) losses++;
@@ -190,12 +234,12 @@ export function calculateOverallPerformance(
   let totalWinningPnl = 0;
   let totalLosingPnl = 0;
 
-  // Group by date for daily stats
   const dailyPnLMap: Record<string, number> = {};
 
   for (const t of trades) {
+    const tradeFees = t.fees ?? calculateTotalFees(t.commission || 0, t.swap || 0, t.other_fees || 0);
     totalGross += t.gross_pnl || 0;
-    totalFees += t.fees || 0;
+    totalFees += tradeFees;
     totalNet += t.net_pnl || 0;
 
     dailyPnLMap[t.trade_date] = (dailyPnLMap[t.trade_date] || 0) + (t.net_pnl || 0);
@@ -233,7 +277,6 @@ export function calculateOverallPerformance(
   const avgWinningTrade = wins > 0 ? totalWinningPnl / wins : 0;
   const avgLosingTrade = losses > 0 ? totalLosingPnl / losses : 0;
 
-  // Month PnL calculations
   const currMonth = currentDate.month;
   const currYear = currentDate.year;
 

@@ -1,29 +1,25 @@
 /**
- * Centralized currency formatting utility.
+ * Centralized Indian Rupee (INR ₹) currency formatting utility.
  */
 
 export const SUPPORTED_CURRENCIES: Record<string, { symbol: string; code: string; name: string }> = {
   INR: { symbol: '₹', code: 'INR', name: 'Indian Rupee' },
-  USD: { symbol: '$', code: 'USD', name: 'US Dollar' },
-  EUR: { symbol: '€', code: 'EUR', name: 'Euro' },
-  GBP: { symbol: '£', code: 'GBP', name: 'British Pound' },
 };
 
 export function formatCurrency(
   amount: number | null | undefined,
-  currencyCode: string = 'INR',
+  _currencyCode: string = 'INR',
   showSign: boolean = false
 ): string {
   if (amount === null || amount === undefined || isNaN(amount)) {
-    return '₹0';
+    return '₹0.00';
   }
 
-  const currency = SUPPORTED_CURRENCIES[currencyCode] || SUPPORTED_CURRENCIES.INR;
-
+  const absoluteVal = Math.abs(amount);
   const formattedNumber = new Intl.NumberFormat('en-IN', {
-    minimumFractionDigits: 0,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(Math.abs(amount));
+  }).format(absoluteVal);
 
   let sign = '';
   if (amount > 0) {
@@ -32,7 +28,7 @@ export function formatCurrency(
     sign = '-';
   }
 
-  return `${sign}${currency.symbol}${formattedNumber}`;
+  return `${sign}₹${formattedNumber}`;
 }
 
 export function formatPnl(

@@ -14,15 +14,18 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- Enable RLS on Profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Profiles Security Policies
+-- Profiles Security Policies (Drop if exists for idempotency)
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
 CREATE POLICY "Users can view their own profile"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
 CREATE POLICY "Users can update their own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.profiles;
 CREATE POLICY "Users can insert their own profile"
   ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id);
@@ -82,20 +85,24 @@ CREATE INDEX IF NOT EXISTS idx_trades_user_date ON public.trades(user_id, trade_
 -- Enable RLS on Trades
 ALTER TABLE public.trades ENABLE ROW LEVEL SECURITY;
 
--- Trades Security Policies (Strict Owner Isolation)
+-- Trades Security Policies (Strict Owner Isolation with Drop if exists)
+DROP POLICY IF EXISTS "Users can view their own trades" ON public.trades;
 CREATE POLICY "Users can view their own trades"
   ON public.trades FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can create their own trades" ON public.trades;
 CREATE POLICY "Users can create their own trades"
   ON public.trades FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own trades" ON public.trades;
 CREATE POLICY "Users can update their own trades"
   ON public.trades FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own trades" ON public.trades;
 CREATE POLICY "Users can delete their own trades"
   ON public.trades FOR DELETE
   USING (auth.uid() = user_id);
@@ -108,6 +115,7 @@ VALUES ('trade-screenshots', 'trade-screenshots', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies (Owner access based on folder path prefix equal to auth.uid())
+DROP POLICY IF EXISTS "Users can upload screenshots to their folder" ON storage.objects;
 CREATE POLICY "Users can upload screenshots to their folder"
   ON storage.objects FOR INSERT
   WITH CHECK (
@@ -116,6 +124,7 @@ CREATE POLICY "Users can upload screenshots to their folder"
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
 
+DROP POLICY IF EXISTS "Users can view their own screenshots" ON storage.objects;
 CREATE POLICY "Users can view their own screenshots"
   ON storage.objects FOR SELECT
   USING (
@@ -124,6 +133,7 @@ CREATE POLICY "Users can view their own screenshots"
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
 
+DROP POLICY IF EXISTS "Users can delete their own screenshots" ON storage.objects;
 CREATE POLICY "Users can delete their own screenshots"
   ON storage.objects FOR DELETE
   USING (
@@ -131,3 +141,6 @@ CREATE POLICY "Users can delete their own screenshots"
     AND auth.role() = 'authenticated'
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
+
+-- 4. Reload PostgREST Schema Cache
+NOTIFY pgrst, 'reload schema';

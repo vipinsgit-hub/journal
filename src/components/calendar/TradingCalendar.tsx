@@ -131,14 +131,14 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
       />
 
       {/* Main Calendar View Container */}
-      <div className="bg-[#111827] border border-slate-800 rounded-2xl p-3 sm:p-6 shadow-xl">
+      <div className="bg-[#12151A] border border-[#272C35] rounded-2xl p-4 sm:p-6 shadow-2xl">
         {/* Days of Week Row Header */}
         <div className="grid grid-cols-7 gap-1.5 sm:gap-3 mb-3 text-center">
           {DAYS_OF_WEEK.map((day, idx) => (
             <div
               key={day}
               className={`py-2 text-xs font-bold uppercase tracking-wider ${
-                idx >= 5 ? 'text-slate-500' : 'text-slate-400'
+                idx >= 5 ? 'text-[#969EAB]/60' : 'text-[#969EAB]'
               }`}
             >
               {day}
@@ -175,7 +175,7 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
           setTradeToEdit(null);
           setIsAddModalOpen(true);
         }}
-        className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-2xl shadow-indigo-600/50 transition-all hover:scale-105"
+        className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-[#8170FF] hover:bg-[#6C56FF] text-white flex items-center justify-center shadow-2xl shadow-[#8170FF]/40 transition-all hover:scale-105"
         title="Add Trade"
       >
         <Plus size={24} />

@@ -17,11 +17,11 @@ export const PnlValue: React.FC<PnlValueProps> = ({
 }) => {
   const pnl = formatPnl(value, currency);
 
-  let colorClass = 'text-slate-400';
+  let colorClass = 'text-[#969EAB]';
   if (pnl.isPositive) {
-    colorClass = 'text-emerald-400';
+    colorClass = 'text-[#20C997]';
   } else if (pnl.isNegative) {
-    colorClass = 'text-rose-400';
+    colorClass = 'text-[#FF647C]';
   }
 
   let sizeClass = 'text-sm font-semibold';

@@ -22,47 +22,47 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   const isNegative = netPnl < 0;
   const isBreakeven = hasTrades && netPnl === 0;
 
-  // Visual card styles
-  let stateStyles = 'bg-[#111827] border-slate-800/80 hover:border-slate-700';
+  // Visual card styles for premium black terminal theme
+  let stateStyles = 'bg-[#12151A] border-[#272C35] hover:border-[#8170FF]/50';
 
   if (!cell.isCurrentMonth) {
-    stateStyles = 'bg-[#0B0F19]/40 border-slate-900/60 opacity-40 hover:opacity-70';
+    stateStyles = 'bg-[#08090B]/50 border-[#181C23] opacity-40 hover:opacity-75';
   } else if (hasTrades) {
     if (isPositive) {
-      stateStyles = 'bg-emerald-950/20 border-emerald-500/40 hover:border-emerald-500/80 shadow-sm shadow-emerald-900/10';
+      stateStyles = 'bg-[#20C997]/10 border-[#20C997]/40 hover:border-[#20C997]/80 shadow-sm shadow-[#20C997]/5';
     } else if (isNegative) {
-      stateStyles = 'bg-rose-950/20 border-rose-500/40 hover:border-rose-500/80 shadow-sm shadow-rose-900/10';
+      stateStyles = 'bg-[#FF647C]/10 border-[#FF647C]/40 hover:border-[#FF647C]/80 shadow-sm shadow-[#FF647C]/5';
     } else if (isBreakeven) {
-      stateStyles = 'bg-slate-900 border-slate-700 hover:border-slate-600';
+      stateStyles = 'bg-[#181C23] border-[#272C35] hover:border-[#8170FF]/50';
     }
   }
 
   return (
     <button
       onClick={() => onClickDate(cell.dateString)}
-      className={`min-h-[90px] sm:min-h-[110px] p-2 sm:p-2.5 rounded-xl border transition-all text-left flex flex-col justify-between group relative overflow-hidden ${stateStyles}`}
+      className={`min-h-[90px] sm:min-h-[110px] p-2.5 rounded-xl border transition-all text-left flex flex-col justify-between group relative overflow-hidden ${stateStyles}`}
     >
       {/* Today Highlight Indicator */}
       {cell.isToday && (
-        <div className="absolute top-0 right-0 w-2 h-2 rounded-bl-full bg-indigo-500 shadow-sm shadow-indigo-500/50" />
+        <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-bl-full bg-[#8170FF] shadow-sm shadow-[#8170FF]/50" />
       )}
 
       {/* Day Header */}
       <div className="flex items-center justify-between w-full">
         <span
-          className={`text-xs sm:text-sm font-semibold rounded-md px-1.5 py-0.5 ${
+          className={`text-xs sm:text-sm font-semibold rounded-lg px-2 py-0.5 ${
             cell.isToday
-              ? 'bg-indigo-600 text-white font-bold'
+              ? 'bg-[#8170FF] text-white font-bold'
               : cell.isCurrentMonth
-              ? 'text-slate-200'
-              : 'text-slate-500'
+              ? 'text-[#F4F5F7]'
+              : 'text-[#969EAB]'
           }`}
         >
           {cell.dayNumber}
         </span>
 
         {hasTrades && (
-          <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-slate-800/90 text-slate-300 font-medium border border-slate-700/50">
+          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-[#181C23] text-[#969EAB] font-medium border border-[#272C35]">
             {dailySummary?.total_trades} {dailySummary?.total_trades === 1 ? 'trade' : 'trades'}
           </span>
         )}
@@ -75,17 +75,17 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
             <span
               className={`text-xs sm:text-sm font-bold block tracking-tight ${
                 isPositive
-                  ? 'text-emerald-400'
+                  ? 'text-[#20C997]'
                   : isNegative
-                  ? 'text-rose-400'
-                  : 'text-slate-300'
+                  ? 'text-[#FF647C]'
+                  : 'text-[#F4F5F7]'
               }`}
             >
               {formatCurrency(netPnl, preferredCurrency, true)}
             </span>
           </div>
         ) : (
-          <span className="text-[11px] text-slate-500/60 block font-normal group-hover:text-slate-400 transition-colors">
+          <span className="text-[11px] text-[#969EAB]/50 block font-normal group-hover:text-[#969EAB] transition-colors">
             No trades
           </span>
         )}

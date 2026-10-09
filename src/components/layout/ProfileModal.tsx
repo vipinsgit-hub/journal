@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { X, User, DollarSign, Globe, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, User, Globe, Check, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { profileService } from '../../features/profiles/profileService';
-import { SUPPORTED_CURRENCIES } from '../../lib/currency';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -12,13 +11,21 @@ interface ProfileModalProps {
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const { user, profile, refreshProfile } = useAuth();
 
-  const [displayName, setDisplayName] = useState(profile?.display_name || '');
-  const [currency, setCurrency] = useState(profile?.preferred_currency || 'INR');
-  const [timezone, setTimezone] = useState(profile?.timezone || 'Asia/Kolkata');
+  const [displayName, setDisplayName] = useState('');
+  const [timezone, setTimezone] = useState('Asia/Kolkata');
 
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDisplayName(profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || '');
+      setTimezone(profile?.timezone || 'Asia/Kolkata');
+      setError(null);
+      setSuccess(false);
+    }
+  }, [isOpen, profile, user]);
 
   if (!isOpen) return null;
 
@@ -26,14 +33,24 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     e.preventDefault();
     if (!user) return;
 
+    const trimmedName = displayName.trim();
+    if (!trimmedName) {
+      setError('Display name cannot be empty.');
+      return;
+    }
+
+    if (trimmedName.length > 50) {
+      setError('Display name must be 50 characters or fewer.');
+      return;
+    }
+
     setSaving(true);
     setError(null);
     setSuccess(false);
 
     try {
       await profileService.updateProfile(user.id, {
-        display_name: displayName,
-        preferred_currency: currency,
+        display_name: trimmedName,
         timezone: timezone,
       });
 
@@ -42,7 +59,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
       setTimeout(() => {
         setSuccess(false);
         onClose();
-      }, 1200);
+      }, 1000);
     } catch (err: any) {
       setError(err.message || 'Failed to update profile settings.');
     } finally {
@@ -51,86 +68,70 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className="bg-[#12151A] border border-[#272C35] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <User size={18} className="text-indigo-400" />
-            <h2 className="text-base font-semibold text-slate-100">Account & Preferences</h2>
+        <div className="flex items-center justify-between p-5 border-b border-[#272C35] bg-[#0D0F12]">
+          <div className="flex items-center gap-2.5">
+            <User size={18} className="text-[#8170FF]" />
+            <h2 className="text-base font-semibold text-[#F4F5F7]">Account & Preferences</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-[#969EAB] hover:text-[#F4F5F7] hover:bg-[#181C23] transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSave} className="p-5 space-y-4">
+        <form onSubmit={handleSave} className="p-6 space-y-5">
           {error && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-300 text-xs">
-              {error}
+            <div className="p-3 bg-[#FF647C]/10 border border-[#FF647C]/20 rounded-xl text-[#FF647C] text-xs flex items-center gap-2">
+              <AlertCircle size={16} className="shrink-0 text-[#FF647C]" />
+              <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-300 text-xs flex items-center gap-2">
-              <Check size={16} />
-              <span>Preferences updated successfully!</span>
+            <div className="p-3 bg-[#20C997]/10 border border-[#20C997]/20 rounded-xl text-[#20C997] text-xs flex items-center gap-2">
+              <Check size={16} className="text-[#20C997]" />
+              <span>Account preferences saved successfully!</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">User Email</label>
+            <label className="block text-xs font-medium text-[#969EAB] mb-1.5">User Email</label>
             <input
               type="text"
               value={user?.email || 'demo@journal.local'}
               disabled
-              className="w-full bg-[#1A2234] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 opacity-70 cursor-not-allowed"
+              className="w-full bg-[#0D0F12] border border-[#272C35] rounded-xl px-3.5 py-2.5 text-xs text-[#969EAB] opacity-75 cursor-not-allowed font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">Display Name</label>
+            <label className="block text-xs font-medium text-[#F4F5F7] mb-1.5">Display Name</label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g. Rahul Sharma"
               required
-              className="w-full bg-[#1A2234] border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
+              maxLength={50}
+              className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3.5 py-2.5 text-xs text-[#F4F5F7] focus:outline-none focus:border-[#8170FF] transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center gap-1">
-              <DollarSign size={14} className="text-slate-400" />
-              <span>Preferred Currency</span>
-            </label>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full bg-[#1A2234] border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
-            >
-              {Object.entries(SUPPORTED_CURRENCIES).map(([code, item]) => (
-                <option key={code} value={code}>
-                  {item.symbol} - {item.name} ({code})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center gap-1">
-              <Globe size={14} className="text-slate-400" />
+            <label className="block text-xs font-medium text-[#F4F5F7] mb-1.5 flex items-center gap-1.5">
+              <Globe size={14} className="text-[#969EAB]" />
               <span>Timezone</span>
             </label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full bg-[#1A2234] border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-[#181C23] border border-[#272C35] rounded-xl px-3.5 py-2.5 text-xs text-[#F4F5F7] focus:outline-none focus:border-[#8170FF] transition-colors"
             >
               <option value="Asia/Kolkata">Asia/Kolkata (IST +5:30)</option>
               <option value="America/New_York">America/New_York (EST -5:00)</option>
@@ -139,20 +140,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
             </select>
           </div>
 
-          <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+          <div className="pt-4 border-t border-[#272C35] flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition-colors"
+              className="px-4 py-2 bg-[#181C23] hover:bg-[#272C35] text-[#969EAB] hover:text-[#F4F5F7] rounded-xl text-xs font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-colors"
+              className="px-5 py-2 bg-[#8170FF] hover:bg-[#6C56FF] disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition-colors shadow-lg shadow-[#8170FF]/20"
             >
-              {saving ? 'Saving...' : 'Save Preferences'}
+              {saving ? 'Saving...' : 'Save Profile'}
             </button>
           </div>
         </form>
