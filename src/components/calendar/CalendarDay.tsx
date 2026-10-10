@@ -26,7 +26,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   let stateStyles = 'bg-[#12151A] border-[#272C35] hover:border-white/30';
 
   if (!cell.isCurrentMonth) {
-    stateStyles = 'bg-[#08090B]/50 border-[#181C23] opacity-40 hover:opacity-75';
+    stateStyles = 'bg-[#08090B]/50 border-[#181C23] opacity-30 hover:opacity-75';
   } else if (hasTrades) {
     if (isPositive) {
       stateStyles = 'bg-[#20C997]/10 border-[#20C997]/40 hover:border-[#20C997]/80 shadow-sm shadow-[#20C997]/5';
@@ -40,17 +40,17 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   return (
     <button
       onClick={() => onClickDate(cell.dateString)}
-      className={`min-h-[90px] sm:min-h-[110px] p-2.5 rounded-xl border transition-all text-left flex flex-col justify-between group relative overflow-hidden ${stateStyles}`}
+      className={`min-h-[64px] sm:min-h-[110px] p-1.5 sm:p-2.5 rounded-xl border transition-all text-left flex flex-col justify-between group relative overflow-hidden active:scale-95 ${stateStyles}`}
     >
       {/* Today Highlight Indicator */}
       {cell.isToday && (
-        <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-bl-full bg-white shadow-sm shadow-white/50" />
+        <div className="absolute top-0 right-0 w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-bl-full bg-white shadow-sm shadow-white/50" />
       )}
 
       {/* Day Header */}
       <div className="flex items-center justify-between w-full">
         <span
-          className={`text-xs sm:text-sm font-semibold rounded-lg px-2 py-0.5 ${
+          className={`text-[11px] sm:text-sm font-semibold rounded-md sm:rounded-lg px-1 sm:px-2 py-0.5 ${
             cell.isToday
               ? 'bg-white text-black font-bold'
               : cell.isCurrentMonth
@@ -62,18 +62,19 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         </span>
 
         {hasTrades && (
-          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-[#181C23] text-[#969EAB] font-medium border border-[#272C35]">
-            {dailySummary?.total_trades} {dailySummary?.total_trades === 1 ? 'trade' : 'trades'}
+          <span className="text-[9px] sm:text-xs px-1 sm:px-2 py-0.5 rounded-md bg-[#181C23] text-[#969EAB] font-medium border border-[#272C35] truncate max-w-[45px] sm:max-w-none text-center">
+            <span className="inline sm:hidden">{dailySummary?.total_trades}t</span>
+            <span className="hidden sm:inline">{dailySummary?.total_trades} {dailySummary?.total_trades === 1 ? 'trade' : 'trades'}</span>
           </span>
         )}
       </div>
 
       {/* Day P&L Content */}
-      <div className="mt-2">
+      <div className="mt-1 sm:mt-2">
         {hasTrades ? (
           <div>
             <span
-              className={`text-xs sm:text-sm font-bold block tracking-tight ${
+              className={`text-[10px] sm:text-sm font-bold block tracking-tight truncate ${
                 isPositive
                   ? 'text-[#20C997]'
                   : isNegative
@@ -85,7 +86,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
             </span>
           </div>
         ) : (
-          <span className="text-[11px] text-[#969EAB]/50 block font-normal group-hover:text-[#969EAB] transition-colors">
+          <span className="text-[9px] sm:text-[11px] text-[#969EAB]/40 block font-normal group-hover:text-[#969EAB] transition-colors hidden sm:inline-block">
             No trades
           </span>
         )}

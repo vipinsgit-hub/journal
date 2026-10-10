@@ -7,6 +7,8 @@ import { Navigation, type ActiveTab } from './components/layout/Navigation';
 import { ProfileModal } from './components/layout/ProfileModal';
 import { TradingCalendar } from './components/calendar/TradingCalendar';
 import { TradingDashboard } from './components/dashboard/TradingDashboard';
+import { AddTradeModal } from './components/trades/AddTradeModal';
+import { PwaPrompt } from './components/shared/PwaPrompt';
 import { tradeService } from './features/trades/tradeService';
 import type { Trade } from './types/trade';
 import { LoadingState, ErrorState } from './components/shared/States';
@@ -18,12 +20,12 @@ const DEMO_INITIAL_TRADES: Trade[] = [
     user_id: 'demo-user',
     trade_date: new Date().toISOString().split('T')[0],
     trade_time: '14:30',
-    instrument: 'EUR/USD',
+    instrument: 'EURUSD',
     market: 'Forex Major',
     direction: 'Long',
     entry_price: 1.0850,
     exit_price: 1.0910,
-    quantity: 1.0, // 1 Lot
+    quantity: 1.0,
     lot_size: 1.0,
     contract_size: 100000,
     stop_loss: 1.0820,
@@ -45,7 +47,7 @@ const DEMO_INITIAL_TRADES: Trade[] = [
     user_id: 'demo-user',
     trade_date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
     trade_time: '18:15',
-    instrument: 'GBP/JPY',
+    instrument: 'GBPJPY',
     market: 'Forex Minor',
     direction: 'Short',
     entry_price: 198.50,
@@ -72,7 +74,7 @@ const DEMO_INITIAL_TRADES: Trade[] = [
     user_id: 'demo-user',
     trade_date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
     trade_time: '09:45',
-    instrument: 'XAU/USD',
+    instrument: 'XAUUSD',
     market: 'Metals (XAU/XAG)',
     direction: 'Long',
     entry_price: 2650.00,
@@ -104,6 +106,7 @@ const MainAppContent: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('calendar');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isGlobalAddTradeOpen, setIsGlobalAddTradeOpen] = useState(false);
 
   const [trades, setTrades] = useState<Trade[]>([]);
   const [tradesLoading, setTradesLoading] = useState(false);
@@ -111,6 +114,7 @@ const MainAppContent: React.FC = () => {
 
   const effectiveUserId = user?.id || (demoMode ? 'demo-user' : null);
   const preferredCurrency = profile?.preferred_currency || 'USD';
+  const todayStr = new Date().toISOString().split('T')[0];
 
   // Fetch trades when user or demoMode changes
   const loadTrades = async () => {
@@ -151,7 +155,7 @@ const MainAppContent: React.FC = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#08090B] flex items-center justify-center">
-        <LoadingState message="Initializing Forex Trading Journal..." />
+        <LoadingState message="Initializing PipLedger Terminal..." />
       </div>
     );
   }
@@ -174,18 +178,22 @@ const MainAppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#08090B] text-[#F4F5F7] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#08090B] text-[#F4F5F7] flex flex-col font-sans overflow-x-hidden pb-16 md:pb-0">
+      {/* PWA Prompts & Offline Banners */}
+      <PwaPrompt />
+
       {/* Top Application Header Navigation */}
       <Navigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenAddTrade={() => setIsGlobalAddTradeOpen(true)}
       />
 
       {/* Main Workspace Body */}
       <main className="flex-1">
         {tradesLoading && trades.length === 0 ? (
-          <LoadingState message="Loading Forex journal records..." />
+          <LoadingState message="Loading PipLedger records..." />
         ) : tradesError ? (
           <div className="max-w-xl mx-auto mt-12 px-4">
             <ErrorState message={tradesError} onRetry={loadTrades} />
@@ -205,6 +213,21 @@ const MainAppContent: React.FC = () => {
 
       {/* Account Preferences Modal */}
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+
+      {/* Global Mobile Quick Add Trade Modal */}
+      {isGlobalAddTradeOpen && (
+        <AddTradeModal
+          isOpen={isGlobalAddTradeOpen}
+          onClose={() => setIsGlobalAddTradeOpen(false)}
+          userId={effectiveUserId!}
+          selectedDate={todayStr}
+          onTradeSaved={() => {
+            loadTrades();
+            setIsGlobalAddTradeOpen(false);
+          }}
+          preferredCurrency={preferredCurrency}
+        />
+      )}
     </div>
   );
 };

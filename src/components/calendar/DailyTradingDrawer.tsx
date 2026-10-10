@@ -48,7 +48,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
       />
 
       {/* Drawer Body */}
-      <div className="fixed top-0 right-0 h-full w-full sm:w-[480px] md:w-[540px] bg-[#12151A] border-l border-[#272C35] z-50 flex flex-col shadow-2xl animate-slideLeft">
+      <div className="fixed top-0 right-0 h-full w-full sm:w-[480px] md:w-[540px] bg-[#12151A] border-l border-[#272C35] z-50 flex flex-col shadow-2xl animate-slideLeft pb-[env(safe-area-inset-bottom,16px)]">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#272C35] bg-[#0D0F12] flex items-center justify-between shrink-0">
           <div>
@@ -61,14 +61,14 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#969EAB] hover:text-[#F4F5F7] hover:bg-[#181C23] transition-colors"
+            className="p-2 rounded-lg text-[#969EAB] hover:text-[#F4F5F7] hover:bg-[#181C23] active:bg-[#181C23] transition-colors"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
           {/* Daily Performance Cards */}
           <div className="bg-[#0D0F12] border border-[#272C35] rounded-2xl p-4 space-y-4">
             <div className="flex items-center justify-between border-b border-[#272C35] pb-3">
@@ -87,18 +87,18 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
               <div className="p-2 rounded-xl bg-[#181C23] border border-[#272C35]">
                 <span className="text-[#969EAB] text-[10px] block">Gross P&L</span>
-                <span className="font-semibold text-[#F4F5F7]">
+                <span className="font-semibold text-[#F4F5F7] truncate block">
                   {formatCurrency(dailySummary.gross_pnl, preferredCurrency)}
                 </span>
               </div>
               <div className="p-2 rounded-xl bg-[#181C23] border border-[#272C35]">
-                <span className="text-[#969EAB] text-[10px] block">Total Fees & Comm</span>
-                <span className="font-semibold text-[#F4F5F7]">
+                <span className="text-[#969EAB] text-[10px] block">Fees & Comm</span>
+                <span className="font-semibold text-[#F4F5F7] truncate block">
                   {formatCurrency(dailySummary.total_fees, preferredCurrency)}
                 </span>
               </div>
               <div className="p-2 rounded-xl bg-[#181C23] border border-[#272C35]">
-                <span className="text-[#969EAB] text-[10px] block">Total Executions</span>
+                <span className="text-[#969EAB] text-[10px] block">Executions</span>
                 <span className="font-semibold text-[#F4F5F7]">{dailySummary.total_trades}</span>
               </div>
             </div>
@@ -120,13 +120,13 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
 
             {/* Best & Worst Trades if available */}
             {(dailySummary.best_trade || dailySummary.worst_trade) && (
-              <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[#272C35]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-[#272C35]">
                 {dailySummary.best_trade && (
                   <div className="p-2.5 rounded-xl bg-[#20C997]/10 border border-[#20C997]/30">
                     <span className="text-[10px] text-[#20C997] font-semibold flex items-center gap-1">
                       <Trophy size={11} /> Best Trade
                     </span>
-                    <p className="font-bold text-[#20C997] mt-0.5">
+                    <p className="font-bold text-[#20C997] mt-0.5 truncate">
                       {dailySummary.best_trade.instrument} ({formatCurrency(dailySummary.best_trade.net_pnl, preferredCurrency, true)})
                     </p>
                   </div>
@@ -136,7 +136,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                     <span className="text-[10px] text-[#FF647C] font-semibold flex items-center gap-1">
                       <AlertTriangle size={11} /> Worst Trade
                     </span>
-                    <p className="font-bold text-[#FF647C] mt-0.5">
+                    <p className="font-bold text-[#FF647C] mt-0.5 truncate">
                       {dailySummary.worst_trade.instrument} ({formatCurrency(dailySummary.worst_trade.net_pnl, preferredCurrency, true)})
                     </p>
                   </div>
@@ -152,7 +152,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
             </h3>
             <button
               onClick={onOpenAddTrade}
-              className="px-3.5 py-1.5 bg-white hover:bg-neutral-200 text-black font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow"
+              className="px-3.5 py-2 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow active:scale-95"
             >
               <Plus size={14} />
               <span>Add Trade</span>
@@ -165,7 +165,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
               <p className="text-xs text-[#969EAB] mb-3">No trades recorded for this date.</p>
               <button
                 onClick={onOpenAddTrade}
-                className="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-semibold rounded-xl text-xs inline-flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl text-xs inline-flex items-center gap-1.5 shadow"
               >
                 <Plus size={14} />
                 <span>Add First Forex Trade for {selectedDate}</span>
@@ -179,10 +179,10 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                 return (
                   <div
                     key={trade.id}
-                    className="bg-[#0D0F12] border border-[#272C35] hover:border-white/30 rounded-xl p-4 transition-all relative space-y-2.5"
+                    className="bg-[#0D0F12] border border-[#272C35] hover:border-white/30 rounded-xl p-3.5 sm:p-4 transition-all relative space-y-2.5"
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                             trade.direction === 'Long'
@@ -207,8 +207,8 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                       <PnlValue value={trade.net_pnl} currency={preferredCurrency} size="lg" />
                     </div>
 
-                    {/* Execution Stats */}
-                    <div className="grid grid-cols-4 gap-2 text-xs text-[#F4F5F7] bg-[#181C23] border border-[#272C35] p-2 rounded-xl text-center font-mono">
+                    {/* Execution Stats Grid (Responsive 2 cols on 320px, 4 cols on desktop) */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-[#F4F5F7] bg-[#181C23] border border-[#272C35] p-2 sm:p-2.5 rounded-xl text-center font-mono">
                       <div>
                         <span className="text-[9px] text-[#969EAB] block font-sans">Entry</span>
                         <span className="font-semibold">{trade.entry_price}</span>
@@ -252,7 +252,7 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                       {trade.screenshot_path ? (
                         <button
                           onClick={() => handleOpenScreenshot(trade.screenshot_path!)}
-                          className="text-[11px] text-white hover:text-slate-300 flex items-center gap-1 font-medium"
+                          className="text-[11px] text-white hover:text-slate-300 flex items-center gap-1 font-medium min-h-[36px]"
                         >
                           <ImageIcon size={13} />
                           <span>View Chart Screenshot</span>
@@ -264,10 +264,10 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => onEditTrade(trade)}
-                          className="p-1.5 text-[#969EAB] hover:text-[#8170FF] hover:bg-[#8170FF]/10 rounded-lg transition-colors"
+                          className="p-2 text-[#969EAB] hover:text-white hover:bg-white/10 rounded-lg transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
                           title="Edit trade"
                         >
-                          <Edit3 size={14} />
+                          <Edit3 size={15} />
                         </button>
 
                         {confirmDeleteId === trade.id ? (
@@ -278,13 +278,13 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                                 onDeleteTrade(trade.id);
                                 setConfirmDeleteId(null);
                               }}
-                              className="px-2 py-0.5 bg-[#FF647C] hover:bg-[#E0536A] text-white rounded text-[10px] font-bold"
+                              className="px-2.5 py-1 bg-[#FF647C] hover:bg-[#E0536A] text-white rounded-md text-[10px] font-bold"
                             >
                               Yes
                             </button>
                             <button
                               onClick={() => setConfirmDeleteId(null)}
-                              className="px-2 py-0.5 bg-[#181C23] text-[#969EAB] rounded text-[10px]"
+                              className="px-2.5 py-1 bg-[#181C23] text-[#969EAB] rounded-md text-[10px]"
                             >
                               No
                             </button>
@@ -292,10 +292,10 @@ export const DailyTradingDrawer: React.FC<DailyTradingDrawerProps> = ({
                         ) : (
                           <button
                             onClick={() => setConfirmDeleteId(trade.id)}
-                            className="p-1.5 text-[#969EAB] hover:text-[#FF647C] hover:bg-[#FF647C]/10 rounded-lg transition-colors"
+                            className="p-2 text-[#969EAB] hover:text-[#FF647C] hover:bg-[#FF647C]/10 rounded-lg transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
                             title="Delete trade"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={15} />
                           </button>
                         )}
                       </div>

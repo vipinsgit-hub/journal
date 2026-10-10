@@ -118,7 +118,7 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
   }, [selectedDate, selectedDateTrades]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-2.5 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Calendar Header */}
       <CalendarHeader
         currentMonth={currentMonth}
@@ -131,13 +131,13 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
       />
 
       {/* Main Calendar View Container */}
-      <div className="bg-[#12151A] border border-[#272C35] rounded-2xl p-4 sm:p-6 shadow-2xl">
+      <div className="bg-[#12151A] border border-[#272C35] rounded-2xl p-2.5 sm:p-6 shadow-2xl">
         {/* Days of Week Row Header */}
-        <div className="grid grid-cols-7 gap-1.5 sm:gap-3 mb-3 text-center">
+        <div className="grid grid-cols-7 gap-1 sm:gap-3 mb-2 sm:mb-3 text-center">
           {DAYS_OF_WEEK.map((day, idx) => (
             <div
               key={day}
-              className={`py-2 text-xs font-bold uppercase tracking-wider ${
+              className={`py-1 sm:py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
                 idx >= 5 ? 'text-[#969EAB]/60' : 'text-[#969EAB]'
               }`}
             >
@@ -147,7 +147,7 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
         </div>
 
         {/* 7-Column Calendar Grid */}
-        <div className="grid grid-cols-7 gap-1.5 sm:gap-3">
+        <div className="grid grid-cols-7 gap-1 sm:gap-3">
           {calendarGrid.map((cell) => {
             const dateTrades = tradesByDateMap[cell.dateString] || [];
             const dailySummary = dateTrades.length > 0
@@ -167,7 +167,7 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
         </div>
       </div>
 
-      {/* Floating Action Button for Quick Add Trade (Mobile / Tablet) */}
+      {/* Floating Action Button (Positioned above mobile bottom bar) */}
       <button
         onClick={() => {
           const nowStr = new Date().toISOString().split('T')[0];
@@ -175,10 +175,10 @@ export const TradingCalendar: React.FC<TradingCalendarProps> = ({
           setTradeToEdit(null);
           setIsAddModalOpen(true);
         }}
-        className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-white hover:bg-neutral-200 text-black font-bold flex items-center justify-center shadow-2xl shadow-white/10 transition-all hover:scale-105"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-30 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white hover:bg-neutral-200 text-black font-bold flex items-center justify-center shadow-2xl shadow-white/20 transition-all hover:scale-105 active:scale-95"
         title="Add Trade"
       >
-        <Plus size={24} />
+        <Plus size={22} />
       </button>
 
       {/* Daily Journal Drawer */}
